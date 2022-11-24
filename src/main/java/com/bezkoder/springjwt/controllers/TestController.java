@@ -1,5 +1,8 @@
 package com.bezkoder.springjwt.controllers;
 
+import com.bezkoder.springjwt.models.ERole;
+import com.bezkoder.springjwt.models.User;
+import com.bezkoder.springjwt.repository.RoleRepository;
 import com.bezkoder.springjwt.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +19,14 @@ import java.security.Principal;
 public class TestController {
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private RoleRepository roleRepository;
   @GetMapping("/all")
-  public String allAccess() {
-    return "Public Content.";
+  public String allAccess(Principal all) {
+    String user = "NOM D'UTILISATEUR: " + userRepository.findByUsername(all.getName()).get().getUsername() + "  EMAIL:  "+
+            userRepository.findByUsername(all.getName()).get().getEmail();
+    return "Bienvenue, " + user;
   }
 
   @GetMapping("/user")
@@ -27,7 +35,7 @@ public class TestController {
   {
 
     return "Bienvenue, " + userRepository.findByUsername(user.getName()).get().getUsername() +
-            userRepository.findByUsername(user.getName()).get().getRoles();
+            roleRepository.findByName(ERole.ROLE_USER).get().getName();
   }
 
   @GetMapping("/mod")
@@ -38,7 +46,9 @@ public class TestController {
 
   @GetMapping("/admin")
   @PreAuthorize("hasRole('ADMIN')")
-  public String adminAccess() {
-    return "Admin Board.";
+  public String adminAccess(Principal admin ) {
+    return "Bienvenue " + " "+ userRepository.findByUsername(admin.getName()).get().getUsername()  + " "+
+            roleRepository.findByName(ERole.ROLE_ADMIN).get().getName()
+            ;
   }
 }

@@ -34,7 +34,7 @@ import com.bezkoder.springjwt.security.services.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+//@RequestMapping("/api/auth")
 public class AuthController {
   @Autowired
   AuthenticationManager authenticationManager;
@@ -108,7 +108,7 @@ public class AuthController {
 
           break;
         case "mod":
-          Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
+          Role modRole = roleRepository.findByName(ERole.MODERATOR)
               .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
           roles.add(modRole);
 
@@ -126,4 +126,6 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
+
+
 }
