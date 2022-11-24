@@ -24,6 +24,7 @@ public class TestController {
   private RoleRepository roleRepository;
   @GetMapping("/all")
   public String allAccess(Principal all) {
+
     String user = "NOM D'UTILISATEUR: " + userRepository.findByUsername(all.getName()).get().getUsername() + "  EMAIL:  "+
             userRepository.findByUsername(all.getName()).get().getEmail();
     return "Bienvenue, " + user;
@@ -47,6 +48,7 @@ public class TestController {
   @GetMapping("/admin")
   @PreAuthorize("hasRole('ADMIN')")
   public String adminAccess(Principal admin ) {
+
     return "Bienvenue " + " "+ userRepository.findByUsername(admin.getName()).get().getUsername()  + " "+
             roleRepository.findByName(ERole.ROLE_ADMIN).get().getName()
             ;
