@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
+import com.bezkoder.springjwt.security.services.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,9 @@ import com.bezkoder.springjwt.security.services.UserDetailsImpl;
 @RestController
 //@RequestMapping("/api/auth")
 public class AuthController {
+
+  @Autowired
+  private CrudService crudService;
   @Autowired
   AuthenticationManager authenticationManager;
 
@@ -175,10 +179,18 @@ public class AuthController {
 
   @RolesAllowed({"USER","ADMIN"})
   @RequestMapping("/admin")
-  public String getAdmin()
+  public List<User> AfficherUsers()
   {
-    return "Welcome Admin";
+    return crudService.Afficher();
   }
+
+  @RolesAllowed("USER")
+  @RequestMapping("/*")
+  public String getUser()
+  {
+    return "Tiec tiec User";
+  }
+
 
   /*@RequestMapping("/*")
   public String getGithub(Principal user)
