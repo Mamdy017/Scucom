@@ -33,8 +33,9 @@ public class CrudController {
         return "Modification reussie avec succès";
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/Supprimer/{id_users}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String Supprimer(@PathVariable("id_users") Long id_users){
         crudService.Supprimer(id_users);
         return "Suppression reussie";

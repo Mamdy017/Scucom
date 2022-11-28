@@ -11,6 +11,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 import com.bezkoder.springjwt.security.services.CrudService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +49,7 @@ import com.bezkoder.springjwt.security.services.UserDetailsImpl;
 @RestController
 //@RequestMapping("/api/auth")
 public class AuthController {
+  private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
   @Autowired
   private CrudService crudService;
@@ -86,6 +89,7 @@ public class AuthController {
             userDetails.getUsername(),
             userDetails.getEmail(),
             roles));
+
   }
 
   @PostMapping("/signup")
@@ -93,41 +97,39 @@ public class AuthController {
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
       return ResponseEntity
               .badRequest()
-              .body(new MessageResponse("Error: Username is already taken!"));
+              .body(new MessageResponse("Erreur: Cet nom d'utilisateur existe déjà!"));
     }
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
       return ResponseEntity
               .badRequest()
-              .body(new MessageResponse("Error: Email is already in use!"));
+              .body(new MessageResponse("Erreur: Cet email existe déjà!"));
     }
 
     // Create new user's account
     User user = new User(signUpRequest.getUsername(),
             signUpRequest.getEmail(),
             encoder.encode(signUpRequest.getPassword()));
-
+            log.info("Utilisateur crée"+user);
     Set<String> strRoles = signUpRequest.getRole();
     Set<Role> roles = new HashSet<>();
 
     if (strRoles == null) {
       Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+              .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
+      log.info("role non trouvé"+userRole);
       roles.add(userRole);
     } else {
       strRoles.forEach(role -> {
         switch (role) {
           case "admin":
             Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
             roles.add(adminRole);
-
-
-
             break;
           default:
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
             roles.add(userRole);
         }
       });
@@ -135,8 +137,10 @@ public class AuthController {
 
     user.setRoles(roles);
     userRepository.save(user);
+    log.info("Utilisateur crée "+user.getUsername());
 
-    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    return ResponseEntity.ok(new MessageResponse("Utilisateur crée avec succès!"));
+
   }
 
 
@@ -159,17 +163,17 @@ public class AuthController {
       protectedInfo.append("e-mail: " + userAttributes.get("email")+"<br><br>");
       protectedInfo.append("Access Token: " + userToken+"<br><br>");
       OidcIdToken idToken = getIdToken(principal);
-      if(idToken != null) {
+       /*if(idToken != null) {
 
         protectedInfo.append("idToken value: " + idToken.getTokenValue()+"<br><br>");
-        protectedInfo.append("Token mapped values <br><br>");
+       protectedInfo.append("Token mapped values <br><br>");
 
         Map<String, Object> claims = idToken.getClaims();
 
         for (String key : claims.keySet()) {
           protectedInfo.append("  " + key + ": " + claims.get(key)+"<br>");
         }
-      }
+      }*/
     }
     else{
       protectedInfo.append("NA");
@@ -184,12 +188,7 @@ public class AuthController {
     return crudService.Afficher();
   }
 
-  @RolesAllowed("USER")
-  @RequestMapping("/*")
-  public String getUser()
-  {
-    return "Tiec tiec User";
-  }
+
 
 
   /*@RequestMapping("/*")
