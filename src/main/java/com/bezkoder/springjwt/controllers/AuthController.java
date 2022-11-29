@@ -83,24 +83,28 @@ public class AuthController {
     List<String> roles = userDetails.getAuthorities().stream()
             .map(item -> item.getAuthority())
             .collect(Collectors.toList());
+    log.info("Le collaborateur "+userDetails.getUsername() + " vient de" +" se connecter");
 
     return ResponseEntity.ok(new JwtResponse(jwt,
-            userDetails.getId(),
+           // userDetails.getId(),
             userDetails.getUsername(),
-            userDetails.getEmail(),
-            roles));
+            userDetails.getEmail()
+            //roles
+    ));
 
   }
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+      log.error("Erreur: Cet nom d'utilisateur existe déjà!");
       return ResponseEntity
               .badRequest()
               .body(new MessageResponse("Erreur: Cet nom d'utilisateur existe déjà!"));
     }
 
     if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+      log.error("Erreur: Cet email existe déjà!");
       return ResponseEntity
               .badRequest()
               .body(new MessageResponse("Erreur: Cet email existe déjà!"));
@@ -110,26 +114,28 @@ public class AuthController {
     User user = new User(signUpRequest.getUsername(),
             signUpRequest.getEmail(),
             encoder.encode(signUpRequest.getPassword()));
-            log.info("Utilisateur crée"+user);
+            log.info("Utilisateur crée "+user);
     Set<String> strRoles = signUpRequest.getRole();
     Set<Role> roles = new HashSet<>();
 
     if (strRoles == null) {
       Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-              .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
-      log.info("role non trouvé"+userRole);
+              .orElseThrow(() -> new RuntimeException("Erreur: Role non trouver."));
+      log.error("role non trouvé"+userRole);
       roles.add(userRole);
     } else {
       strRoles.forEach(role -> {
         switch (role) {
           case "admin":
+            log.error("Erreur: Role non trouver.");
             Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
+                    .orElseThrow(() -> new RuntimeException("Erreur: Role non trouver."));
             roles.add(adminRole);
             break;
           default:
+            log.error("Erreur: Role non trouver.");
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Erreur: Role nom trouver."));
+                    .orElseThrow(() -> new RuntimeException("Erreur: Role non trouver."));
             roles.add(userRole);
         }
       });
